@@ -63,6 +63,7 @@ function render_dots(circle_group, newXScale, x_value) {
 
 //==========================================================
 //function to update the circle groups
+//cg = circle-groups
 function update_tips(x,cg) {
     if (x === "poverty") {
         let label = "In Poverty (%)";
@@ -94,13 +95,42 @@ function update_tips(x,cg) {
 //Load csv file
 d3.csv("assets/data/data.csv").then(function(news_data) {
     console.log(news_data[0]);
-
+//==========================================================
+//data for the scatter chart
     Object.entries(news_data).forEach(([key,news]) => {
         //Test object load
         // console.log(news.state);
         news.poverty = +news.poverty;
         news.healthcare = +news.healthcare;
+        news.age = +news.age;
+        news.smokes = +news.smokes;
+        news.obesity = +news.obesity;
+        news.income = +news.income;
+
+        console.log(news.income);
     });
+//==========================================================
+    //Scales the X-Axis, if I remember...
+    let XLinear_Scale = X_Scale(news_data,x_news);
+
+    let YLinear_Scale = d3.scaleLinear()
+                          .domain([0, d3.max(news_data, nd => nd.poverty)])
+                          .range([height,0]);
+//==========================================================
+    //Creates the axes functions
+    let bottom_axis_2 = d3.axisBottom(XLinear_Scale);
+    let y_axis = d3.axisLeft(YLinear_Scale);
+//==========================================================
+    //append x-axis format
+    let xAxis = scatter_chart.append("g")
+                             .classed("x-axis", true)
+                             .attr("transform", `translate(0, ${height})`)
+                             .call(bottom_axis_2);
+
+    //appends y-axis format
+    scatter_chart.append("g")
+                 .call(y_axis);
+
 
 
 }).catch(function(error) {
