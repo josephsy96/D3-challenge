@@ -2,11 +2,14 @@
 let height_svg = 500;
 let width_svg = 700;
 
+// let height_svg = window.innerHeight;
+// let width_svg = window.innerWidth;
+
 //Set default margins
 let margin = {
     top: 30,
     right: 50,
-    left: 50,
+    left: 80,
     bottom: 80
 };
 
@@ -75,10 +78,18 @@ function render_Y_axis (new_y_scale, y_axis) {
 
 //==========================================================
 //Render Chart Circles
-function render_dots(circle_group, newXScale, x_value) {
+function render_x_dots(circle_group, newXScale, x_value) {
     circle_group.transition()
                 .duration(1200)
                 .attr("cx", cir => newXScale(cir[x_value]));
+    return circle_group;
+}
+
+function render_y_dots(circle_group, newYScale, y_value) {
+    circle_group.transition()
+                .duration(1200)
+                .attr("cx", cir => newYScale(cir[y_value]));
+    
     return circle_group;
 }
 
