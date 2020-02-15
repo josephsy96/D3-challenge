@@ -1,6 +1,6 @@
 //set chart height and width
 let height_svg = 500;
-let width_svg = 600;
+let width_svg = 700;
 
 //Set default margins
 let margin = {
@@ -28,21 +28,32 @@ let scatter_chart = news_svg.append("g")
 //Set default x-axis data
 
 let x_news = "poverty";
+let y_news = "healthcare";
 
 //==========================================================
 //Update x axis scale for scatter chart
-function X_Scale(health, x_value) {
-    //creates the scales
+function X_Scale(poverty, x_value) {
+    //creates the scales for x
     let x_linear_scale = d3.scaleLinear()
-                        .domain([d3.min(health, h => h[x_value]) * 0.8,
-                        d3.max(health, h => h[x_value]) * 1.2
+                        .domain([d3.min(poverty, p => p[x_value]) * 0.8,
+                        d3.max(poverty, p => p[x_value]) * 1.2
                     ]).range([0, width]);
     return x_linear_scale;
 }
 
+//updates y axis
+function Y_Scale(healthcare, y_value) {
+    //creates the scales for y
+    let y_linear_scale = d3.scaleLinear()
+                           .domain([d3.min(healthcare, h => h[y_value]) * 0.8,
+                           d3.max(healthcare, h => h[y_value] * 1.2)]).range([0,height]);
+
+    return y_linear_scale;
+}
+
 //==========================================================
 //Update the x axis values
-function render_axes(new_x_scale, x_axis) {
+function render_X_axis(new_x_scale, x_axis) {
     let bottom_axis = d3.axisBottom(new_x_scale);
 
     x_axis.transition()
@@ -50,6 +61,16 @@ function render_axes(new_x_scale, x_axis) {
             .call(bottom_axis);
 
     return x_axis;
+}
+//Update the y axis values
+function render_Y_axis (new_y_scale, y_axis) {
+    let left_axis = d3.axisLeft(new_y_scale);
+
+    y_axis.transition()
+          .duration(1200)
+          .call(left_axis);
+
+    return y_axis;
 }
 
 //==========================================================
@@ -62,14 +83,17 @@ function render_dots(circle_group, newXScale, x_value) {
 }
 
 //==========================================================
-//function to update the circle groups
+//function to update the x axis tips
 //cg = circle-groups
-function update_tips(x,cg) {
+function update_x_tips(x,cg) {
     if (x === "poverty") {
-        let label = "In Poverty (%)";
+        let label = "Poverty (%):";
+    }
+    else if (x === "age") {
+        let label = "Age:";
     }
     else {
-        let label = "Age (Median)";
+        let label = "Household Income:"
     }
 
     let chart_tip = d3.tip()
@@ -90,6 +114,36 @@ function update_tips(x,cg) {
     
     return cg;
     }
+
+//function to update the y axis tips
+function update_y_tips(y,cg) {
+    if (y === "healthcare") {
+        let label = "Healthcare (%):"
+    }
+    else if (y === "smokes") {
+        let label = "Smokes (%):"
+    }
+    else {
+        let label = "Obese (%):"
+    }
+
+    let chart_tip = d3.tip()
+                      .attr("class","chart-y-tip")
+                      .offset([60,80])
+                      .html(function(yt) {
+                          return (`${yt.state}<br>${label} ${yt[y]}`);
+                      });
+    cg.call(chart_tip);
+
+    cg.on("mouseover", function(y_data) {
+        chart_tip.show(y_data);
+    }).on("mouseout", function(y_data, index) {
+        chart_tip.hide(y_data);
+    });
+
+    return cg;
+}
+
 
 //==========================================================
 //Load csv file
@@ -113,9 +167,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     //Scales the X-Axis, if I remember...
     let XLinear_Scale = X_Scale(news_data,x_news);
 
-    let YLinear_Scale = d3.scaleLinear()
-                          .domain([0, d3.max(news_data, nd => nd.poverty)])
-                          .range([height,0]);
+    let YLinear_Scale = Y_Scale(news_data,y_news);
 //==========================================================
     //Creates the axes functions
     let bottom_axis_2 = d3.axisBottom(XLinear_Scale);
@@ -130,6 +182,30 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     //appends y-axis format
     scatter_chart.append("g")
                  .call(y_axis);
+
+    //append the original data tips
+
+    let circle_shape = scatter_chart.selectAll("circle")
+                                    .data(news_data)
+                                    .enter()
+                                    .append("circle")
+                                    .attr("cx", c => XLinear_Scale(c[x_news]))
+                                    .attr("cx", c => YLinear_Scale(c.healthcare))
+                                    .attr("r", 20)
+                                    .attr("fill","#FF7400")
+                                    .attr("opacity","0.60");
+    
+    //Creates labels for 2nd axis
+    let labels_group = scatter_chart.append("g")
+                                    .attr("transform", `translate(${width / 2}, ${height + 20})`);
+    
+    let poverty_label = labels_group.append("text")
+                                .attr("x", 0)
+                                .attr("y", 20)
+                                .attr("value", "poverty")//event listener
+                                .classed("active", true)
+                                .text("In Poverty (%)");
+    let 
 
 
 
