@@ -8,9 +8,9 @@ let width_svg = 1100;
 //Set default margins
 let margin = {
     top: 30,
-    right: 80,
-    left: 80,
-    bottom: 100
+    right: 70,
+    left: 110,
+    bottom: 150
 };
 
 
@@ -35,21 +35,21 @@ let y_news = "healthcare";
 
 //==========================================================
 //Update x axis scale for scatter chart
-function X_Scale(poverty, x_value) {
+function X_Scale(news_data, x_value) {
     //creates the scales for x
     let x_linear_scale = d3.scaleLinear()
-                        .domain([d3.min(poverty, p => p[x_value]) * 0.8,
-                        d3.max(poverty, p => p[x_value]) * 1.2
+                        .domain([d3.min(news_data, nd => nd[x_value]) * 0.8,
+                        d3.max(news_data, nd => nd[x_value]) * 1.2
                     ]).range([0, width]);
     return x_linear_scale;
 }
 
 //updates y axis
-function Y_Scale(healthcare, y_value) {
+function Y_Scale(news_data, y_value) {
     //creates the scales for y
     let y_linear_scale = d3.scaleLinear()
-                           .domain([d3.min(healthcare, h => h[y_value]) * 0.8,
-                           d3.max(healthcare, h => h[y_value] * 1.2)]).range([0,height]);
+                           .domain([d3.min(news_data, nd => nd[y_value]) * 0.8,
+                           d3.max(news_data, nd => nd[y_value] * 1.2)]).range([height,0]);
 
     return y_linear_scale;
 }
@@ -109,7 +109,7 @@ function update_x_tips(x,cg) {
 
     let chart_tip = d3.tip()
                       .attr("class","chart-tip")
-                      .offset([80, 60])
+                      .offset([70, 50])
                       .html(function(t) {
         return (`${t.state}<br>${label} ${t[x]}`);
                       });
@@ -159,7 +159,7 @@ function update_y_tips(y,cg) {
 //==========================================================
 //Load csv file
 d3.csv("assets/data/data.csv").then(function(news_data) {
-    console.log(news_data[0]);
+    console.log(news_data);
 //==========================================================
 //data for the scatter chart
     Object.entries(news_data).forEach(([key,news]) => {
@@ -191,10 +191,11 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                              .call(bottom_axis_2);
 
     //appends y-axis format
-    let yAxis = scatter_chart.append("g")
-                             .classed("y-axis", true)
-                             .attr("transform", `translate(${width},0)`)
-                             .call(y_axis);
+    // let yAxis = scatter_chart.append("g")
+    //                          .classed("y-axis", true)
+    //                          .attr("transform", `translate(${width},0)`)
+    //                          .call(y_axis);
+    scatter_chart.append("g").call(y_axis);
 
 //==========================================================
     //append the original data tips
@@ -204,24 +205,74 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                     .enter()
                                     .append("circle")
                                     .attr("cx", c => XLinear_Scale(c[x_news]))
-                                    .attr("cx", c => YLinear_Scale(c.healthcare))
-                                    .attr("r", 20)
+                                    .attr("cx", c => YLinear_Scale(c[y_value]))
+                                    .attr("r", 10)
                                     .attr("fill","#FF7400")
                                     .attr("opacity","0.60");
     
-    //Creates labels for 2nd axis
-    let labels_group = scatter_chart.append("g")
+    //Creates labels for x axis
+    let xlabels_group = scatter_chart.append("g")
                                     .attr("transform", `translate(${width / 2}, ${height + 20})`);
     
-    let poverty_label = labels_group.append("text")
+    //Creates labels for y axis
+    let ylabels_group = scatter_chart.append("g")
+                                     .attr("transform", `translate(${height / 3}, ${width / 8.2})`);
+
+    //==========================================================
+    //For x axis labels
+    let poverty_label = xlabels_group.append("text")
                                 .attr("x", 0)
                                 .attr("y", 20)
                                 .attr("value", "poverty")//event listener
                                 .classed("active", true)
                                 .text("In Poverty (%)");
-    let 
+    
+    let age_label = xlabels_group.append("text")
+                                .attr("x",0)
+                                .attr("y", 40)
+                                .attr("value", "age")//event listener
+                                .classed("inactive", true)
+                                .text("Age (Median)");
 
+    let income_label = xlabels_group.append("text")
+                                   .attr("x",0)
+                                   .attr("y",60)
+                                   .attr("value", "income")
+                                   .classed("inactive", true)
+                                   .text("Household Income (Median)");
+    //==========================================================
+    //For y axis labels
 
+    let healthcare_label = ylabels_group.append("text")
+                                        .attr("transform", "rotate(-90)")
+                                        .attr("x", 0 - margin.left)
+                                        .attr("y", 20 - (height / 2))
+                                        .attr("dy", "1em")
+                                        .attr("value", "healthcare")
+                                        .classed("active", true)
+                                        .text("Lacks Healthcare (%)");
+
+    let smoke_label = ylabels_group.append("text")
+                                        .attr("transform", "rotate(-90)")
+                                        .attr("x", 0 - margin.left)
+                                        .attr("y", 0 - (height / 2))
+                                        .attr("dy", "1em")
+                                        .attr("value", "smokes")
+                                        .classed("inactive", true)
+                                        .text("Smokes (%)");
+    
+    let obese_label = ylabels_group.append("text")
+                                        .attr("transform", "rotate(-90)")
+                                        .attr("x", 0 - margin.left)
+                                        .attr("y", - 20 - (height / 2))
+                                        .attr("dy", "1em")
+                                        .attr("value", "obesity")
+                                        .classed("inactive", true)
+                                        .text("Obese (%)");
+
+    //This will update axes data...hopefully...
+    let update_xCircles = update_x_tips(x_news,circle_shape);
+    let update_yCircles = update_y_tips(y_news,circle_shape);                      
 
 }).catch(function(error) {
     console.log(error);
