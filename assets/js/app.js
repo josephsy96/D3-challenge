@@ -1,6 +1,6 @@
 //set chart height and width
-let height_svg = 500;
-let width_svg = 700;
+let height_svg = 600;
+let width_svg = 1100;
 
 // let height_svg = window.innerHeight;
 // let width_svg = window.innerWidth;
@@ -8,14 +8,14 @@ let width_svg = 700;
 //Set default margins
 let margin = {
     top: 30,
-    right: 50,
+    right: 80,
     left: 80,
-    bottom: 80
+    bottom: 100
 };
 
 
-let width = height_svg - margin.left - margin.right;
-let height = width_svg - margin.top - margin.bottom;
+let width = width_svg - margin.left - margin.right;
+let height = height_svg - margin.top - margin.bottom;
 
 //Create the wrapper for the svg scatter plot
 let news_svg = d3.select("#scatter")
@@ -191,9 +191,12 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                              .call(bottom_axis_2);
 
     //appends y-axis format
-    scatter_chart.append("g")
-                 .call(y_axis);
+    let yAxis = scatter_chart.append("g")
+                             .classed("y-axis", true)
+                             .attr("transform", `translate(${width},0)`)
+                             .call(y_axis);
 
+//==========================================================
     //append the original data tips
 
     let circle_shape = scatter_chart.selectAll("circle")
