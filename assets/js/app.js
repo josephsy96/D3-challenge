@@ -1,6 +1,6 @@
 //set chart height and width
-let height_svg = 900;
-let width_svg = 1000;
+let height_svg = 500;
+let width_svg = 600;
 
 //Set default margins
 let margin = {
