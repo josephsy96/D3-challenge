@@ -1,3 +1,4 @@
+
 //set chart height and width
 let height_svg = 600;
 let width_svg = 1100;
@@ -47,10 +48,12 @@ function X_Scale(news_data, x_value) {
 //updates y axis
 function Y_Scale(news_data, y_value) {
     //creates the scales for y
+    // let y_linear_scale = d3.scaleLinear()
+    //                        .domain([d3.max(news_data, nd => nd[y_value]),
+    //                        d3.min(news_data, nd => nd[y_value])]).range([height,0]);
     let y_linear_scale = d3.scaleLinear()
-                           .domain([d3.min(news_data, nd => nd[y_value]) * 0.8,
-                           d3.max(news_data, nd => nd[y_value] * 1.2)]).range([height,0]);
-
+                           .domain([0,d3.max(news_data, nd => nd[y_value])])
+                           .range([height,0]);
     return y_linear_scale;
 }
 
@@ -98,27 +101,27 @@ function render_y_dots(circle_group, newYScale, y_value) {
 //cg = circle-groups
 function update_x_tips(x,cg) {
     if (x === "poverty") {
-        let label = "Poverty (%):";
+        var label = "Poverty (%):";
     }
     else if (x === "age") {
-        let label = "Age:";
+        var label = "Age:";
     }
     else {
-        let label = "Household Income:"
+        var label = "Household Income:";
     }
 
     let chart_tip = d3.tip()
-                      .attr("class","chart-tip")
-                      .offset([70, 50])
+                      .attr("class","tooltip")
+                      .offset([60, -50])
                       .html(function(t) {
-        return (`${t.state}<br>${label} ${t[x]}`);
+                      return (`${t.state}<br>${label} ${t[x]}`);
                       });
 
     cg.call(chart_tip);
 
     //mouseover data
     cg.on("mouseover", function(n_data) {
-        chart_tip.show(n_data);
+        chart_tip.show(n_data,this);
     }).on("mouseout", function(n_data, index) { //event when mouse hovers over circle
             chart_tip.hide(n_data);
         });
@@ -129,25 +132,25 @@ function update_x_tips(x,cg) {
 //function to update the y axis tips
 function update_y_tips(y,cg) {
     if (y === "healthcare") {
-        let label = "Healthcare (%):"
+        var label = "Healthcare (%):";
     }
     else if (y === "smokes") {
-        let label = "Smokes (%):"
+        var label = "Smokes (%):";
     }
     else {
-        let label = "Obese (%):"
+        var label = "Obese (%):";
     }
 
     let chart_tip = d3.tip()
-                      .attr("class","chart-y-tip")
-                      .offset([60,80])
-                      .html(function(yt) {
-                          return (`${yt.state}<br>${label} ${yt[y]}`);
+                      .attr("class","tooltip")
+                      .offset([60,-50])
+                      .html(function(y) {
+                       return (`${y.state}<br>${label} ${y[y]}`);
                       });
     cg.call(chart_tip);
 
     cg.on("mouseover", function(y_data) {
-        chart_tip.show(y_data);
+        chart_tip.show(y_data,this);
     }).on("mouseout", function(y_data, index) {
         chart_tip.hide(y_data);
     });
@@ -162,7 +165,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     console.log(news_data);
 //==========================================================
 //data for the scatter chart
-    Object.entries(news_data).forEach(([key,news]) => {
+    news_data.forEach((news) => {
         //Test object load
         // console.log(news.state);
         news.poverty = +news.poverty;
@@ -177,6 +180,10 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
 //==========================================================
     //Scales the X-Axis, if I remember...
     let XLinear_Scale = X_Scale(news_data,x_news);
+
+    // let y_linear_scale = d3.scaleLinear()
+    //                        .domain([d3.max(news_data, nd => nd[y_news]),
+    //                        d3.min(news_data, nd => nd[y_news])]).range([height,0]);
 
     let YLinear_Scale = Y_Scale(news_data,y_news);
 //==========================================================
@@ -195,7 +202,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     //                          .classed("y-axis", true)
     //                          .attr("transform", `translate(${width},0)`)
     //                          .call(y_axis);
-    scatter_chart.append("g").call(y_axis);
+    let yAxis = scatter_chart.append("g").call(y_axis);
 
 //==========================================================
     //append the original data tips
@@ -205,11 +212,13 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                     .enter()
                                     .append("circle")
                                     .attr("cx", c => XLinear_Scale(c[x_news]))
-                                    .attr("cx", c => YLinear_Scale(c[y_value]))
-                                    .attr("r", 10)
+                                    // .attr("cy", c => YLinear_Scale(c[y_news]))
+                                    .attr("cy", c => YLinear_Scale(c[y_news]))
+                                    .attr("r", 20)
                                     .attr("fill","#FF7400")
-                                    .attr("opacity","0.60");
-    
+                                    .attr("opacity","0.60")
+                                    .html();
+    console.log(circle_shape);
     //Creates labels for x axis
     let xlabels_group = scatter_chart.append("g")
                                     .attr("transform", `translate(${width / 2}, ${height + 20})`);
@@ -223,6 +232,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     let poverty_label = xlabels_group.append("text")
                                 .attr("x", 0)
                                 .attr("y", 20)
+                                .attr("id","x-axis")
                                 .attr("value", "poverty")//event listener
                                 .classed("active", true)
                                 .text("In Poverty (%)");
@@ -230,6 +240,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     let age_label = xlabels_group.append("text")
                                 .attr("x",0)
                                 .attr("y", 40)
+                                .attr("id","x-axis")
                                 .attr("value", "age")//event listener
                                 .classed("inactive", true)
                                 .text("Age (Median)");
@@ -237,6 +248,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     let income_label = xlabels_group.append("text")
                                    .attr("x",0)
                                    .attr("y",60)
+                                   .attr("id","x-axis")
                                    .attr("value", "income")
                                    .classed("inactive", true)
                                    .text("Household Income (Median)");
@@ -248,6 +260,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                         .attr("x", 0 - margin.left)
                                         .attr("y", 20 - (height / 2))
                                         .attr("dy", "1em")
+                                        .attr("id","y-axis")
                                         .attr("value", "healthcare")
                                         .classed("active", true)
                                         .text("Lacks Healthcare (%)");
@@ -257,6 +270,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                         .attr("x", 0 - margin.left)
                                         .attr("y", 0 - (height / 2))
                                         .attr("dy", "1em")
+                                        .attr("id","y-axis")
                                         .attr("value", "smokes")
                                         .classed("inactive", true)
                                         .text("Smokes (%)");
@@ -266,14 +280,103 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                         .attr("x", 0 - margin.left)
                                         .attr("y", - 20 - (height / 2))
                                         .attr("dy", "1em")
+                                        .attr("id","y-axis")
                                         .attr("value", "obesity")
                                         .classed("inactive", true)
                                         .text("Obese (%)");
 
     //This will update axes data...hopefully...
     let update_xCircles = update_x_tips(x_news,circle_shape);
-    let update_yCircles = update_y_tips(y_news,circle_shape);                      
 
+    let update_yCircles = update_y_tips(y_news,circle_shape);
+    
+    xlabels_group.selectAll("text").attr("id","x-axis").on("click", function() {
+        let x_data = d3.select(this).attr("id","x-axis").attr("value");
+
+        //==========================================================
+        console.log(x_data);
+        if (x_data !== x_news) {
+            x_news = x_data;
+
+            XLinear_Scale = X_Scale(news_data, x_news);
+
+            xAxis = render_X_axis(XLinear_Scale, xAxis);
+
+            circle_shape = render_x_dots(circle_shape,XLinear_Scale,x_news);
+
+            cg = update_x_tips(x_news, circle_shape);
+
+            if (x_news === "age") {
+                age_label.classed("active", true)
+                         .classed("inactive", false);
+                poverty_label.classed("active", false)
+                             .classed("inactive", true);
+                income_label.classed("active", false)
+                            .classed("inactive", true);
+            }
+            else if (x_news === "income") {
+                age_label.classed("active", false)
+                         .classed("inactive", true);
+                poverty_label.classed("active", false)
+                             .classed("inactive", true);
+                income_label.classed("active", true)
+                            .classed("inactive", false);
+            }
+            else {
+                age_label.classed("active", false)
+                         .classed("inactive", true);
+                poverty_label.classed("active", true)
+                             .classed("inactive", false);
+                income_label.classed("active", false)
+                            .classed("inactive", true);
+            }
+        }
+
+    });
+
+    //==========================================================
+    ylabels_group.selectAll("text").attr("id","y-axis").on("click", function() {
+        
+        let y_data = d3.select(this).attr("id","y-axis").attr("value");
+
+        if (y_data !== y_news) {
+            y_news = y_data;
+
+            YLinear_Scale = Y_Scale(news_data, y_news);
+
+            YAxis = render_Y_axis(YLinear_Scale, yAxis);
+
+            circle_shape = render_y_dots(circle_shape,YLinear_Scale,y_news);
+
+            cg = update_y_tips(y_news, circle_shape);
+
+            if (y_news === "healthcare") {
+                healthcare_label.classed("active", true)
+                         .classed("inactive", false);
+                smoke_label.classed("active", false)
+                             .classed("inactive", true);
+                obese_label.classed("active", false)
+                            .classed("inactive", true);
+            }
+            else if (y_news === "smokes") {
+                healthcare_label.classed("active", false)
+                         .classed("inactive", true);
+                smoke_label.classed("active", true)
+                             .classed("inactive", false);
+                obese_label.classed("active", false)
+                            .classed("inactive", true);
+            }
+            else {
+                healthcare_label.classed("active", false)
+                         .classed("inactive", true);
+                smoke_label.classed("active", false)
+                             .classed("inactive", true);
+                obese_label.classed("active", true)
+                            .classed("inactive", false);
+            }
+            
+        }
+    });
 }).catch(function(error) {
     console.log(error);
 });
