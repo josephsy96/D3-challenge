@@ -1,5 +1,6 @@
 
 //set chart height and width
+
 let height_svg = 600;
 let width_svg = 1100;
 
@@ -24,7 +25,6 @@ let news_svg = d3.select("#scatter")
             .attr("width", width_svg)
             .attr("height", height_svg);
 //==========================================================
-
 //Set the chart svg
 let scatter_chart = news_svg.append("g")
                 .attr("transform", `translate(${margin.left}, ${margin.right})`);
@@ -208,7 +208,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                     .attr("r", 20)
                                     .attr("fill","#FF7400")
                                     .attr("opacity","0.60");
-                                    
+
     console.log(circle_shape);
     //Creates labels for x axis
     let xlabels_group = scatter_chart.append("g")
@@ -371,4 +371,5 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
 }).catch(function(error) {
     console.log(error);
 });
+
 //==========================================================
