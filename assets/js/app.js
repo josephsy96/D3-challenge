@@ -48,9 +48,7 @@ function X_Scale(news_data, x_value) {
 //updates y axis
 function Y_Scale(news_data, y_value) {
     //creates the scales for y
-    // let y_linear_scale = d3.scaleLinear()
-    //                        .domain([d3.max(news_data, nd => nd[y_value]),
-    //                        d3.min(news_data, nd => nd[y_value])]).range([height,0]);
+  
     let y_linear_scale = d3.scaleLinear()
                            .domain([0,d3.max(news_data, nd => nd[y_value])])
                            .range([height,0]);
@@ -174,6 +172,7 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
         news.smokes = +news.smokes;
         news.obesity = +news.obesity;
         news.income = +news.income;
+        news.abbr = +news.abbr;
 
         console.log(news.income);
     });
@@ -181,9 +180,6 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
     //Scales the X-Axis, if I remember...
     let XLinear_Scale = X_Scale(news_data,x_news);
 
-    // let y_linear_scale = d3.scaleLinear()
-    //                        .domain([d3.max(news_data, nd => nd[y_news]),
-    //                        d3.min(news_data, nd => nd[y_news])]).range([height,0]);
 
     let YLinear_Scale = Y_Scale(news_data,y_news);
 //==========================================================
@@ -197,11 +193,6 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                              .attr("transform", `translate(0, ${height})`)
                              .call(bottom_axis_2);
 
-    //appends y-axis format
-    // let yAxis = scatter_chart.append("g")
-    //                          .classed("y-axis", true)
-    //                          .attr("transform", `translate(${width},0)`)
-    //                          .call(y_axis);
     let yAxis = scatter_chart.append("g").call(y_axis);
 
 //==========================================================
@@ -216,8 +207,8 @@ d3.csv("assets/data/data.csv").then(function(news_data) {
                                     .attr("cy", c => YLinear_Scale(c[y_news]))
                                     .attr("r", 20)
                                     .attr("fill","#FF7400")
-                                    .attr("opacity","0.60")
-                                    .html();
+                                    .attr("opacity","0.60");
+                                    
     console.log(circle_shape);
     //Creates labels for x axis
     let xlabels_group = scatter_chart.append("g")
